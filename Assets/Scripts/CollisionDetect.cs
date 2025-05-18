@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.SocialPlatforms.Impl;
 
 
 
@@ -9,6 +10,7 @@ public class CollisionDetect : MonoBehaviour
 {
 
     [SerializeField] GameObject player;
+    [SerializeField] GameObject score;
     [SerializeField] GameObject playerAnim;
     [SerializeField] GameObject MainCam;
     [SerializeField] GameObject FadeOut;
@@ -23,8 +25,10 @@ public class CollisionDetect : MonoBehaviour
     {
 
         player.GetComponent<PlayerMovement>().enabled = false;
+        score.GetComponent<MasterInfo>().HandleCollisionImpact();
         playerAnim.GetComponent<Animator>().Play("Stumble Backwards");
         MainCam.GetComponent<Animator>().Play("CollisionCam");
+
         yield return new WaitForSeconds(3);
         FadeOut.SetActive(true);
         yield return new WaitForSeconds(3);

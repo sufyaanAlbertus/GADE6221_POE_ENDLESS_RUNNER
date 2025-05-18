@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting.Antlr3.Runtime.Tree;
 using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
@@ -7,6 +8,7 @@ public class PlayerMovement : MonoBehaviour
 
     public float moveSpeed = 5f;
     private float gameStartTime;
+    public bool canIncreaseSpeed = true;
 
 
     // Initial boundary for first 4 seconds
@@ -25,7 +27,12 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (canIncreaseSpeed)
+        {
+            IncreaseSpeedOverTime();
+        }
        
+
         MovePlayer();
        
     }
@@ -50,6 +57,11 @@ public class PlayerMovement : MonoBehaviour
         transform.position = new Vector3(clampedX, transform.position.y, transform.position.z);
 
 
+    }
+    private void IncreaseSpeedOverTime()
+    {
+        float elapsed = Time.time - gameStartTime;
+        moveSpeed = Mathf.Min(5f + elapsed / 10f, 20f); // Speed ramps from 5 up to 20
     }
 }
 

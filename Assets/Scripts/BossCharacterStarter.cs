@@ -19,9 +19,9 @@ public class BossCharacterStarter : MonoBehaviour
     public float[] lanePositions = { -4f, 0f, 4f };
 
     public float zOffsetFromPlayer = 15f;
-    public float laneMoveInterval = 2f;
-    public float obstacleSpawnInterval = 1.5f;
-    public float laneSwitchSpeed = 3f;
+    public float laneMoveInterval = 10f;
+    public float obstacleSpawnInterval = 0.5f;
+    public float laneSwitchSpeed = 15f;
 
     private float bossCameraY = 4.23f;
     private float bossCameraZ = -3.31f;

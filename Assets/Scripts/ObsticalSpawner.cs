@@ -10,7 +10,14 @@ public class ObsticalSpawner : MonoBehaviour
     public GameObject[] obstaclePrefabs;
     public float[] lanePositions = { -4f, 0f, 4f };
     public float segmentLength = 30f;
-    public int obstaclesPerSegment = 3;
+
+    [Header("Difficulty Settings")]
+    [Range(1, 10)]
+    public int difficultyLevel = 10; // 1 to 10 
+
+    [Range(1, 10)]
+    public int maxObstaclesPerSegment = 10; // Max obstacles to spawn
+    public float minSpacingMultiplier = 0.5f; // Lower = more obstacles packed closer
     public GameObject player;  // Assign this in inspector or via code
 
     
@@ -23,12 +30,18 @@ public class ObsticalSpawner : MonoBehaviour
             return spawnedObstacles;
 
         int lanesAvailable = lanePositions.Length;
-        int obstaclesToSpawn = Mathf.Min(obstaclesPerSegment, lanesAvailable);
+
+        // Increase obstacle count based on difficulty
+        int obstaclesToSpawn = Mathf.Clamp(difficultyLevel, 1, maxObstaclesPerSegment);
+        obstaclesToSpawn = Mathf.Min(obstaclesToSpawn, lanesAvailable); // Don't exceed lanes
 
         List<int> availableLaneIndices = Enumerable.Range(0, lanesAvailable).ToList();
         ShuffleList(availableLaneIndices);
 
-        float spacing = segmentLength / obstaclesToSpawn;
+        // Decrease spacing as difficulty increases
+        float spacingMultiplier = Mathf.Lerp(1f, minSpacingMultiplier, difficultyLevel / 10f);
+        float spacing = (segmentLength / obstaclesToSpawn) * spacingMultiplier;
+
         float startZ = segmentStartPos.z;
 
         for (int i = 0; i < obstaclesToSpawn; i++)
@@ -43,12 +56,9 @@ public class ObsticalSpawner : MonoBehaviour
             float y = GetYOffsetForPrefab(prefabIndex);
 
             Vector3 spawnPos = new Vector3(x, y, z);
-
             GameObject obstacle = Instantiate(prefab, spawnPos, Quaternion.Euler(0, 90, 0));
             obstacle.AddComponent<CloneMarker>();
             spawnedObstacles.Add(obstacle);
-
-           
         }
 
         return spawnedObstacles;

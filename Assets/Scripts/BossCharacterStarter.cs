@@ -5,9 +5,10 @@ using UnityEngine;
 
 public class BossCharacterStarter : MonoBehaviour
 {
-    
-       public MasterInfo masterInfo;
-    public SegmentGeneration segmentGeneration;  // Add this
+    public AudioSource normalMusicSource;   // normal BG music
+    public AudioSource bossMusicSource;     // boss fight music
+    public MasterInfo masterInfo;
+    public SegmentGeneration segmentGenerations;  // Add this
     public GameObject bossPrefab;
     public GameObject[] bossObstaclePrefabs;
     public PlayerMovement playerMovement;
@@ -30,9 +31,12 @@ public class BossCharacterStarter : MonoBehaviour
     private Vector3 originalCameraPosition;
     private Quaternion originalCameraRotation;
 
+    private bool isPausedForHit = false;
 
+    private bool bossMusicStarted = false; 
+    private bool normalMusicStarted = false;
     private GameObject bossInstance;
-    private bool bossSpawned = false;
+    public bool bossSpawned = false;
     private Coroutine bossObstacleCoroutine;
     private Vector3 targetPosition;
 
@@ -50,13 +54,29 @@ public class BossCharacterStarter : MonoBehaviour
 
     void Update()
     {
-        if (!bossSpawned && masterInfo != null && masterInfo.stopObstacleSpawning)
+        if (isPausedForHit) return;
+
+        if (masterInfo != null)
         {
-            SpawnBoss();
+            // Play boss music early at score 48
+            if (!bossMusicStarted && masterInfo.CurrentScore >= 48)
+            {
+                bossMusicStarted = true;
+                StartBossMusic();
+            }
+
+            // Spawn boss at 50
+            if (!bossSpawned && masterInfo.stopObstacleSpawning)
+            {
+                SpawnBoss();
+            }
         }
 
-        if (bossSpawned && !masterInfo.bossDefeated && masterInfo.CurrentScore >= 100)
+
+        if (bossSpawned && !masterInfo.bossDefeated && masterInfo.CurrentScore >= 100 )
         {
+
+           
             DefeatBoss();
         }
 
@@ -65,6 +85,28 @@ public class BossCharacterStarter : MonoBehaviour
             FollowAndMoveBoss();
         }
     }
+
+
+
+    void StartBossMusic()
+    {
+        if (normalMusicSource != null)
+        {
+            normalMusicSource.Stop();
+        }
+
+        if (bossMusicSource != null)
+        {
+            bossMusicSource.volume = PlayerPrefs.GetFloat("MusicVolume", 1f);
+            bossMusicSource.Play();
+
+            Debug.Log("Boss music started!");
+        }
+
+        bossMusicStarted = true; // Set flag
+    }
+
+
 
 
     void SpawnBoss()
@@ -88,8 +130,70 @@ public class BossCharacterStarter : MonoBehaviour
         bossObstacleCoroutine = StartCoroutine(SpawnBossObstacles());
     }
 
+    // Call this from CollisionDetect when hit occurs
+    public void PauseBossActions(float pauseDuration)
+    {
+        if (!bossSpawned) return;
+
+        StartCoroutine(PauseBossSequence(pauseDuration));
+    }
+
+    private IEnumerator PauseBossSequence(float pauseDuration)
+    {
+        isPausedForHit = true;
+
+        // 1. Stop obstacle spawning
+        if (bossObstacleCoroutine != null)
+        {
+            StopCoroutine(bossObstacleCoroutine);
+            bossObstacleCoroutine = null;
+        }
+
+        // 2. Freeze boss movement
+        Vector3 frozenPosition = bossInstance.transform.position;
+
+        float timer = 0f;
+        while (timer < pauseDuration)
+        {
+            bossInstance.transform.position = frozenPosition; // Enforce no movement
+            timer += Time.unscaledDeltaTime; // Works even if game is paused
+            yield return null;
+        }
+
+        // 3. Resume boss behavior
+        isPausedForHit = false;
+
+        if (bossInstance != null)
+        {
+            bossObstacleCoroutine = StartCoroutine(SpawnBossObstacles());
+        }
+    }
+
+    public void DiePlayerBossSequence()
+    {
+        if (bossInstance == null)
+        {
+            Debug.LogWarning("DiePlayerBossSequence called but bossInstance is NULL — skipping.");
+            return;
+        }
+
+        // Stop obstacle spawning
+        if (bossObstacleCoroutine != null)
+        {
+            StopCoroutine(bossObstacleCoroutine);
+            bossObstacleCoroutine = null;
+        }
+
+        // Freeze boss movement
+        Vector3 frozenPosition = bossInstance.transform.position;
+        bossInstance.transform.position = frozenPosition; // Enforce no movement
+    }
+
     void FollowAndMoveBoss()
     {
+
+        if (isPausedForHit) return;
+
         float targetZ = player.position.z + zOffsetFromPlayer;
         float laneX = Mathf.PingPong(Time.time * laneSwitchSpeed, 11f) - 5.5f;
 
@@ -162,10 +266,27 @@ public class BossCharacterStarter : MonoBehaviour
         masterInfo.stopObstacleSpawning = false;
         masterInfo.clearedObstacles = false;
 
-        // Reset the segment spawning position to the player's current z position
-        if (segmentGeneration != null && player != null)
+        // STOP boss music and resume normal music
+        if (bossMusicSource != null)
         {
-            segmentGeneration.zPos = Mathf.FloorToInt(player.position.z);
+            bossMusicSource.Stop();
+        }
+
+        if (normalMusicSource != null)
+        {
+            normalMusicSource.volume = PlayerPrefs.GetFloat("MusicVolume", 1f);
+            normalMusicSource.Play();
+
+            Debug.Log("Normal music resumed after boss!");
+        }
+
+        bossMusicStarted = false; // Reset flag
+
+
+        // Reset the segment spawning position to the player's current z position
+        if (segmentGenerations != null && player != null)
+        {
+            segmentGenerations.zPos = Mathf.FloorToInt(player.position.z);
         }
 
         Debug.Log("Boss defeated! Camera reset. Player speed increased. Obstacles and segments resumed.");

@@ -6,7 +6,7 @@ using UnityEngine;
 public class PlayerMovement : MonoBehaviour
 {
 
-    public float moveSpeed = 5f;
+    public float moveSpeed = 3f;
     private float gameStartTime;
     public bool canIncreaseSpeed = true;
 
@@ -64,7 +64,7 @@ public class PlayerMovement : MonoBehaviour
     private void IncreaseSpeedOverTime()
     {
         float elapsed = Time.time - gameStartTime;
-        moveSpeed = Mathf.Min(5f + elapsed / 10f, 20f); // Speed ramps from 5 up to 20
+        moveSpeed = Mathf.Min(5f + elapsed / 10f, 12f); // Speed ramps from 3 up to 12
     }
 }
 

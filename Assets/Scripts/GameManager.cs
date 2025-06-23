@@ -27,15 +27,20 @@ public class GameManager : MonoBehaviour
             CurrentState = GameState.Playing;
             Debug.Log("Game Started");
         }
-
-        public void PauseGame()
+        public void ResumeGame()
         {
-            CurrentState = GameState.Paused;
+            CurrentState = GameState.Playing;
+            Debug.Log("Game Resumed");
         }
 
-        public void EndGame()
-        {
-            CurrentState = GameState.GameOver;
-        }
-    
+    public void PauseGame()
+    {
+        CurrentState = GameState.Paused;
+    }
+
+    public void EndGame()
+    {
+        CurrentState = GameState.GameOver;
+    }
+
 }

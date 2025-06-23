@@ -27,7 +27,6 @@ public class SegmentGeneration : MonoBehaviour
         if (GameManager.Instance.CurrentState != GameState.Playing)
             return;
 
-       
         if (!creatingSegment && player.position.z + baseDestroyOffset > segmentLength)
         {
             StartCoroutine(SegmentGen());

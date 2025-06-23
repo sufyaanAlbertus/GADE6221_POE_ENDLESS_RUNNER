@@ -31,9 +31,20 @@ public class ObsticalSpawner : MonoBehaviour
 
         int lanesAvailable = lanePositions.Length;
 
+
+
+        // Boost difficulty if Boss 2 defeated
+        int currentDifficulty = difficultyLevel;
+        if (gameManager.bossDefeated2)
+        {
+            currentDifficulty = Mathf.Min(10, difficultyLevel + 3); 
+        }
+
+        
+
         // Increase obstacle count based on difficulty
-        int obstaclesToSpawn = Mathf.Clamp(difficultyLevel, 1, maxObstaclesPerSegment);
-        obstaclesToSpawn = Mathf.Min(obstaclesToSpawn, lanesAvailable); // Don't exceed lanes
+        int obstaclesToSpawn = Mathf.Clamp(currentDifficulty, 1, maxObstaclesPerSegment);
+        obstaclesToSpawn = Mathf.Min(obstaclesToSpawn, lanesAvailable);
 
         List<int> availableLaneIndices = Enumerable.Range(0, lanesAvailable).ToList();
         ShuffleList(availableLaneIndices);
@@ -42,7 +53,17 @@ public class ObsticalSpawner : MonoBehaviour
         float spacingMultiplier = Mathf.Lerp(1f, minSpacingMultiplier, difficultyLevel / 10f);
         float spacing = (segmentLength / obstaclesToSpawn) * spacingMultiplier;
 
+
+        // Adjust start Z after Boss 2 defeated
+
         float startZ = segmentStartPos.z;
+
+        if (gameManager.bossDefeated2 && player != null)
+        {
+            // After Boss 2 defeated — spawn obstacles exactly at player Z
+            startZ = player.transform.position.z;
+            Debug.Log("Boss 2 defeated — obstacles now spawn at player Z: " + startZ);
+        }
 
         for (int i = 0; i < obstaclesToSpawn; i++)
         {
@@ -75,6 +96,8 @@ public class ObsticalSpawner : MonoBehaviour
             case 2: return 0.493f; // printer
             case 3: return 0.485f; // sofa
             case 4: return 1.5f; // coin
+            case 5: return 1.5f;// extra life pick up 
+            case 6: return 1.5f; // speed boost pick up
             default: return 0f;
         }
     }

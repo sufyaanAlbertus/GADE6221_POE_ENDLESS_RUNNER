@@ -7,28 +7,29 @@ using UnityEngine;
 
 public class MasterInfo : MonoBehaviour
 {
-
     public static int coinCount = 0;
-  
+
     [SerializeField] GameObject coinDisplay;
     [SerializeField] GameObject scoreDisplay;
     private float gameTime = 0f;
     public bool stopObstacleSpawning = false;
+    public bool stopObstacleSpawning2 = false;
     public bool clearedObstacles = false;
     public int CurrentScore { get; private set; }
     public bool bossTriggered = false;
+
     public bool bossDefeated = false;
+    public bool bossDefeated2 = false;
     public bool stopScore = false;
 
     public static MasterInfo Instance { get; private set; }
 
+    
+
     private void Awake()
     {
-       
         Instance = this;
-        
     }
-
 
     void Update()
     {
@@ -36,16 +37,15 @@ public class MasterInfo : MonoBehaviour
             return;
 
         if (coinDisplay != null)
-            coinDisplay.GetComponent<TMP_Text>().text = "COINS: " + coinCount;
+            coinDisplay.GetComponent<TMP_Text>().text = " " + coinCount;
 
-        if (!stopScore)  
+        if (!stopScore)
             gameTime += Time.deltaTime;
-        
+
         CurrentScore = Mathf.FloorToInt(gameTime);
 
         if (scoreDisplay != null)
             scoreDisplay.GetComponent<TMP_Text>().text = "Score: " + CurrentScore;
-
 
         // Stop obstacle spawning when score hits 50
         if (CurrentScore == 50 && !stopObstacleSpawning)
@@ -55,7 +55,14 @@ public class MasterInfo : MonoBehaviour
             ClearAllObstacles();
         }
 
-       
+        if (CurrentScore == 150 && !stopObstacleSpawning2)
+        {
+            stopObstacleSpawning2 = true;
+            Debug.Log("Score hit 50! Obstacles will stop spawning.");
+            ClearAllObstacles();
+        }
+
+
     }
 
     public void ClearAllObstacles()
@@ -68,10 +75,10 @@ public class MasterInfo : MonoBehaviour
             Destroy(marker.gameObject);
         }
 
-
         clearedObstacles = true;
         Debug.Log("All spawned obstacle clones have been destroyed.");
     }
+
     public void HandleCollisionImpact()
     {
         stopScore = true;
@@ -85,26 +92,26 @@ public class MasterInfo : MonoBehaviour
         CurrentScore = 0;
 
         stopObstacleSpawning = false;
+        stopObstacleSpawning2 = false;
         clearedObstacles = false;
         bossTriggered = false;
         bossDefeated = false;
+        bossDefeated2 = false;
         stopScore = false;
 
         // Reset UI
         if (coinDisplay != null)
-            coinDisplay.GetComponent<TMP_Text>().text = "COINS: 0";
+            coinDisplay.GetComponent<TMP_Text>().text = " " + coinCount;
 
         if (scoreDisplay != null)
             scoreDisplay.GetComponent<TMP_Text>().text = "Score: 0";
 
         // Clean up all obstacles and segments
-        ClearAllObstacles(); // Uses CloneMarker tag/component
-        ClearAllSegments();  // Uses CloneMarker or any identifier on segments
+        ClearAllObstacles();
+        ClearAllSegments();
 
         Debug.Log("Game state has been fully reset.");
     }
-
-    
 
     public void ClearAllSegments()
     {
@@ -116,5 +123,4 @@ public class MasterInfo : MonoBehaviour
 
         Debug.Log("All segment clones destroyed.");
     }
-
 }

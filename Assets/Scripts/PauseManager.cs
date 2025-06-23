@@ -8,11 +8,15 @@ using UnityEngine.UI;
 public class PauseManager : MonoBehaviour
 {
     [SerializeField] private GameObject pauseMenuPanel;
+    [SerializeField] private GameObject BlurPanel;
     [SerializeField] private Button pauseButton;
-   
+    [SerializeField] private Image pauseButtonImage;
     [SerializeField] private Button mainMenuButton;
     [SerializeField] private Button restartButton;
-    [SerializeField] private TextMeshProUGUI buttonText;
+   
+
+    [SerializeField] private Sprite playSprite;
+    [SerializeField] private Sprite pauseSprite;
 
     private bool isPaused = false;
 
@@ -24,6 +28,7 @@ public class PauseManager : MonoBehaviour
         restartButton.onClick.AddListener(RestartGame);
 
         pauseMenuPanel.SetActive(false); // Hide pause menu at start
+        BlurPanel.SetActive(false);
         UpdateButtonText();
     }
 
@@ -33,13 +38,13 @@ public class PauseManager : MonoBehaviour
         Time.timeScale = isPaused ? 0f : 1f;
 
         pauseMenuPanel.SetActive(isPaused);
+        BlurPanel.SetActive(isPaused);
         UpdateButtonText();
     }
 
     private void UpdateButtonText()
     {
-        if (buttonText != null)
-            buttonText.text = isPaused ? "Play" : "Pause";
+        pauseButtonImage.sprite = isPaused ? playSprite : pauseSprite;
     }
 
     private void ReturnToMainMenu()
